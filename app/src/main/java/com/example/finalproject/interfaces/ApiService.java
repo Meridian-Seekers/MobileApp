@@ -3,23 +3,26 @@ package com.example.finalproject.interfaces;
 import com.example.finalproject.models.DeleteAcc;
 import com.example.finalproject.models.DeleteResponse;
 import com.example.finalproject.models.EmailRequest;
+import com.example.finalproject.models.LeaderboardEntry;
 import com.example.finalproject.models.LoginResponse;
 import com.example.finalproject.models.LogoutRequest;
 import com.example.finalproject.models.PasswordResetRequest;
 import com.example.finalproject.models.PasswordResetResponse;
 import com.example.finalproject.models.User;
 import com.example.finalproject.models.Video;
-import com.google.gson.JsonObject;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
-import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 
 public interface ApiService {
     @POST("login")
@@ -43,4 +46,14 @@ public interface ApiService {
 
     @POST("password_reset")
     Call<PasswordResetResponse> resetPassword(@Body PasswordResetRequest passwordResetRequest);
+
+    @Multipart
+    @POST("upload_video")
+    Call<ResponseBody> uploadVideo(
+            @Part("email") RequestBody email,
+            @Part("video_name") RequestBody videoName,
+            @Part MultipartBody.Part videoFile
+    );
+    @GET("/leaderboard")
+    Call<List<LeaderboardEntry>> getLeaderboard();
 }
