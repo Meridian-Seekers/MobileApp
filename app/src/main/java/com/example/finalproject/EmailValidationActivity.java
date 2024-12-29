@@ -60,7 +60,7 @@ public class EmailValidationActivity extends AppCompatActivity {
         EmailRequest emailRequest = new EmailRequest(email);
         authService.validateEmail(email, new ResponseCallBack() {
             @Override
-            public void onSuccess(LoginResponse loginResponse) throws Exception {
+            public void onSuccess(LoginResponse loginResponse) {
                 Intent intent = new Intent(EmailValidationActivity.this, ResetPasswordActivity.class);
                 intent.putExtra("email", email);
                 startActivity(intent);

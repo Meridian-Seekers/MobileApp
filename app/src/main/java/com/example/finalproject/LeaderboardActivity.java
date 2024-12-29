@@ -3,6 +3,8 @@ package com.example.finalproject;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -14,6 +16,13 @@ import android.widget.ViewSwitcher;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.finalproject.interfaces.LeaderboardResponse;
+import com.example.finalproject.interfaces.LeaderboardResponseSingle;
+import com.example.finalproject.models.GlobalLeaderboardEntry;
+import com.example.finalproject.models.LogoutRequest;
+import com.example.finalproject.models.SingleLeaderboardEntry;
+import com.example.finalproject.services.MangerService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +39,7 @@ public class LeaderboardActivity extends AppCompatActivity {
     private ViewSwitcher leaderboardSwitcher;
     private String selectedTimePeriod = "All Time";
     private List<LeaderboardData> leaderboardDataList;
+    private  List<GlobalLeaderboardData> globalLeaderboardList;
     private DBHelper dbHelper;
     private String currentUserEmail;
     private GlobalLeaderboardAdapter adapterGlobalRank;
@@ -41,58 +51,40 @@ public class LeaderboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_leadboard);
         initializeViews();
+
         dbHelper = new DBHelper(this);
         currentUserEmail = getCurrentUserEmail();
 
         leaderboardDataList = new ArrayList<>();
-        setupRecyclerView();
+        globalLeaderboardList=new ArrayList<>();
+
 
         // Set initial colors
-        textViewSinglePerformance.setTextColor(getResources().getColor(R.color.active_color));
-        textViewGlobalRank.setTextColor(getResources().getColor(R.color.inactive_color));
+        updateTextViewColors();
 
         switchButton.setOnClickListener(v -> {
             switchLeaderboards();
             updateTextViewColors();
+
         });
 
-        homeButton.setOnClickListener(v -> {
-            Intent intent = new Intent(LeaderboardActivity.this, HomepageActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        setupNavigationButtons();
 
-        ImageView imageView6 = findViewById(R.id.imageView6);
-        imageView6.setOnClickListener(v -> {
-            Intent intent = new Intent(LeaderboardActivity.this, Guide_video_Activity.class);
-            startActivity(intent);
-        });
+        adapterSinglePerformance = new LeaderboardAdapter(this, leaderboardDataList);
+        recyclerViewSinglePerformance.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewSinglePerformance.setAdapter(adapterSinglePerformance);
 
-        ImageView imageView7 = findViewById(R.id.imageView7);
-        imageView7.setOnClickListener(v -> {
-            Intent intent = new Intent(LeaderboardActivity.this, LeaderboardActivity.class);
-            startActivity(intent);
-        });
+        adapterGlobalRank = new GlobalLeaderboardAdapter(this, globalLeaderboardList);
+        recyclerViewGlobalRank.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewGlobalRank.setAdapter(adapterGlobalRank);
 
-        ImageView imageView8 = findViewById(R.id.imageView8);
-        imageView8.setOnClickListener(v -> {
-            // Pass the rank to ViewProfileActivity
-            Intent intent = new Intent(LeaderboardActivity.this, ViewProfileActivity.class);
-            intent.putExtra("userRank", 6); // Replace 6 with the actual rank from your leaderboard logic
-            startActivity(intent);
-        });
-
-        ImageView insertVideo = findViewById(R.id.insertvideo);
-        insertVideo.setOnClickListener(v -> {
-            Intent intent = new Intent(LeaderboardActivity.this, PopupUpload.class);
-            startActivity(intent);
-        });
+        loadSingleLeaderboard();
 
         timePeriodSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedTimePeriod = parent.getItemAtPosition(position).toString();
-                setupRecyclerView(); // Reload data based on selected time period
+//                setupRecyclerView(); // Reload data based on selected time period
             }
 
             @Override
@@ -113,82 +105,65 @@ public class LeaderboardActivity extends AppCompatActivity {
         textViewGlobalRank = findViewById(R.id.textView16);
     }
 
-    private void setupRecyclerView() {
-        leaderboardDataList.clear();
-        switch (selectedTimePeriod) {
-            case "Last 24 Hours":
-                leaderboardDataList.add(new LeaderboardData("Video 10", 6.7));
-                leaderboardDataList.add(new LeaderboardData("Video 9", 6.5));
-                break;
-            case "Last 7 Days":
-                leaderboardDataList.add(new LeaderboardData("Video 10", 6.7));
-                leaderboardDataList.add(new LeaderboardData("Video 9", 6.5));
-                leaderboardDataList.add(new LeaderboardData("Video 8", 8.0));
-                leaderboardDataList.add(new LeaderboardData("Video 7", 9.0));
-                break;
-            case "Last 30 Days":
-                leaderboardDataList.add(new LeaderboardData("Video 10", 6.7));
-                leaderboardDataList.add(new LeaderboardData("Video 9", 6.5));
-                leaderboardDataList.add(new LeaderboardData("Video 8", 8.0));
-                leaderboardDataList.add(new LeaderboardData("Video 7", 9.0));
-                leaderboardDataList.add(new LeaderboardData("Video 6", 7.0));
-                leaderboardDataList.add(new LeaderboardData("Video 5", 7.8));
-                break;
-            case "All Time":
-            default:
-                leaderboardDataList.add(new LeaderboardData("Video 10", 6.7));
-                leaderboardDataList.add(new LeaderboardData("Video 9", 6.5));
-                leaderboardDataList.add(new LeaderboardData("Video 8", 8.0));
-                leaderboardDataList.add(new LeaderboardData("Video 7", 9.0));
-                leaderboardDataList.add(new LeaderboardData("Video 6", 7.0));
-                leaderboardDataList.add(new LeaderboardData("Video 5", 7.8));
-                leaderboardDataList.add(new LeaderboardData("Video 4", 8.4));
-                leaderboardDataList.add(new LeaderboardData("Video 3", 8.1));
-                leaderboardDataList.add(new LeaderboardData("Video 2", 8.3));
-                leaderboardDataList.add(new LeaderboardData("Video 1", 8.2));
-                break;
-        }
 
-        adapterSinglePerformance = new LeaderboardAdapter(this, leaderboardDataList);
-        recyclerViewSinglePerformance.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewSinglePerformance.setAdapter(adapterSinglePerformance);
 
-        // Setup RecyclerView for global leaderboard
-        List<GlobalLeaderboardData> globalLeaderboardList = createStaticGlobalLeaderboardData();
-        adapterGlobalRank = new GlobalLeaderboardAdapter(this, globalLeaderboardList);
-        recyclerViewGlobalRank.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewGlobalRank.setAdapter(adapterGlobalRank);
+    private void loadSingleLeaderboard() {
+        MangerService managerService = new MangerService();
+        LogoutRequest req = new LogoutRequest();
+        SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        req.setEmail(preferences.getString("user_email", ""));
+
+        managerService.Leaderboard_Single(req, new LeaderboardResponseSingle() {
+            @Override
+            public void onSuccess(List<LeaderboardData> leaderboard) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    leaderboardDataList.clear();
+                    leaderboardDataList.addAll(leaderboard);
+                    adapterSinglePerformance.notifyDataSetChanged();
+                });
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // Log or show an error message
+            }
+        });
     }
 
-    private List<GlobalLeaderboardData> createStaticGlobalLeaderboardData() {
-        List<GlobalLeaderboardData> globalLeaderboardList = new ArrayList<>();
-        SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+    private void loadGlobalLeaderboard() {
+        MangerService managerService = new MangerService();
+        managerService.LeaderboardData(new LeaderboardResponse() {
+            @Override
+            public void onSuccess(List<GlobalLeaderboardEntry> leaderboard) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    globalLeaderboardList.clear();
+                    for (GlobalLeaderboardEntry entry : leaderboard) {
+                        globalLeaderboardList.add(new GlobalLeaderboardData(entry.getF_name(), entry.getL_name(), entry.getScore()));
+                    }
+                    adapterGlobalRank.notifyDataSetChanged();
+                });
+            }
 
-        String firstName = preferences.getString("f_name", null);
-        String lastName = preferences.getString("l_name", null);
-        // Add static data for top 10 players
-        globalLeaderboardList.add(new GlobalLeaderboardData(1, "Sudheera", "Dasun", 9.8));
-        globalLeaderboardList.add(new GlobalLeaderboardData(2, "Lasith", "Dilshan", 9.7));
-        globalLeaderboardList.add(new GlobalLeaderboardData(3, "Sandali", "Sithumini", 9.5));
-        globalLeaderboardList.add(new GlobalLeaderboardData(4, "Dinithi", "Herath", 9.3));
-        globalLeaderboardList.add(new GlobalLeaderboardData(5, "Tharushi", "Kavindya", 9.2));
-        globalLeaderboardList.add(new GlobalLeaderboardData(6, firstName, lastName, 9.0));
-        globalLeaderboardList.add(new GlobalLeaderboardData(7, "Amal", "Perera", 8.9));
-        globalLeaderboardList.add(new GlobalLeaderboardData(8, "Dinuka", "Sandeepa", 8.8));
-        globalLeaderboardList.add(new GlobalLeaderboardData(9, "Nuwan", "Perera", 8.7));
-        globalLeaderboardList.add(new GlobalLeaderboardData(10, "Mahesh", "Pradeep", 8.7));
-
-        return globalLeaderboardList;
+            @Override
+            public void onError(Throwable t) {
+                // Log or show an error message
+            }
+        });
     }
 
     private String getCurrentUserEmail() {
         SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        return preferences.getString("user_email", null); // Return null if email not found
+        return preferences.getString("user_email", "");
     }
 
     private void switchLeaderboards() {
         isLeaderboard1Visible = !isLeaderboard1Visible;
         leaderboardSwitcher.showNext();
+        if(!isLeaderboard1Visible){
+            loadGlobalLeaderboard();
+        }else{
+            loadSingleLeaderboard();
+        }
     }
 
     private void updateTextViewColors() {
@@ -199,5 +174,26 @@ public class LeaderboardActivity extends AppCompatActivity {
             textViewSinglePerformance.setTextColor(getResources().getColor(R.color.inactive_color));
             textViewGlobalRank.setTextColor(getResources().getColor(R.color.active_color));
         }
+    }
+
+    private void setupNavigationButtons() {
+        homeButton.setOnClickListener(v -> navigateToActivity(HomepageActivity.class));
+
+        findViewById(R.id.imageView6).setOnClickListener(v -> navigateToActivity(Guide_video_Activity.class));
+        findViewById(R.id.imageView7).setOnClickListener(v -> navigateToActivity(LeaderboardActivity.class));
+
+        findViewById(R.id.imageView8).setOnClickListener(v -> {
+            Intent intent = new Intent(LeaderboardActivity.this, ViewProfileActivity.class);
+            intent.putExtra("userRank", 6); // Replace with actual rank from leaderboard logic
+            startActivity(intent);
+        });
+
+        findViewById(R.id.insertvideo).setOnClickListener(v -> navigateToActivity(PopupUpload.class));
+    }
+
+    private void navigateToActivity(Class<?> activityClass) {
+        Intent intent = new Intent(LeaderboardActivity.this, activityClass);
+        startActivity(intent);
+        finish();
     }
 }

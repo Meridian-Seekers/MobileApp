@@ -1,24 +1,27 @@
 package com.example.finalproject;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 public class GlobalLeaderboardData {
-    private int rank;
+
+    @Expose
+    @SerializedName("first_name")
     private String firstName;
+
+    @Expose
+    @SerializedName("last_name")
     private String lastName;
+
+    @Expose
+    @SerializedName("final_score")
     private double finalScore;
 
-    public GlobalLeaderboardData(int rank, String firstName, String lastName, double finalScore) {
-        this.rank = rank;
+    public GlobalLeaderboardData( String firstName, String lastName, double finalScore) {
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.finalScore = finalScore;
-    }
-
-    public int getRank() {
-        return rank;
-    }
-
-    public void setRank(int rank) {
-        this.rank = rank;
     }
 
     public String getFirstName() {

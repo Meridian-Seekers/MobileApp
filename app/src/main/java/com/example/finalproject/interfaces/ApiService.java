@@ -1,13 +1,15 @@
 package com.example.finalproject.interfaces;
 
+import com.example.finalproject.LeaderboardData;
 import com.example.finalproject.models.DeleteAcc;
 import com.example.finalproject.models.DeleteResponse;
 import com.example.finalproject.models.EmailRequest;
-import com.example.finalproject.models.LeaderboardEntry;
+import com.example.finalproject.models.GlobalLeaderboardEntry;
 import com.example.finalproject.models.LoginResponse;
 import com.example.finalproject.models.LogoutRequest;
 import com.example.finalproject.models.PasswordResetRequest;
 import com.example.finalproject.models.PasswordResetResponse;
+import com.example.finalproject.models.SingleLeaderboardEntry;
 import com.example.finalproject.models.User;
 import com.example.finalproject.models.Video;
 
@@ -54,6 +56,9 @@ public interface ApiService {
             @Part("video_name") RequestBody videoName,
             @Part MultipartBody.Part videoFile
     );
-    @GET("/leaderboard")
-    Call<List<LeaderboardEntry>> getLeaderboard();
+    @GET("main_model_api/global_leaderboard")
+    Call<List<GlobalLeaderboardEntry>> getLeaderboard();
+
+    @POST("main_model_api/single_leaderboard")
+    Call<List<LeaderboardData>> getSLeaderboard(@Body LogoutRequest logoutRequest);
 }

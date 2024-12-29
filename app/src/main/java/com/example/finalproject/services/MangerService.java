@@ -1,22 +1,22 @@
 package com.example.finalproject.services;
 
+import com.example.finalproject.LeaderboardData;
 import com.example.finalproject.interfaces.ApiService;
 import com.example.finalproject.interfaces.LeaderboardResponse;
-import com.example.finalproject.interfaces.ResponseCallBack;
+import com.example.finalproject.interfaces.LeaderboardResponseSingle;
 import com.example.finalproject.interfaces.VideoResponse;
-import com.example.finalproject.models.LeaderboardEntry;
-import com.example.finalproject.models.LoginResponse;
+import com.example.finalproject.models.GlobalLeaderboardEntry;
+import com.example.finalproject.models.LogoutRequest;
+import com.example.finalproject.models.SingleLeaderboardEntry;
 import com.example.finalproject.models.Video;
 
 import java.util.List;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Part;
 
 public class MangerService {
     private String base_url="http://192.168.1.10:5000/api/";
@@ -64,10 +64,10 @@ public class MangerService {
                 .baseUrl(base_url)
                 .addConverterFactory(GsonConverterFactory.create()).build();
         ApiService apiService=retrofit.create(ApiService.class);
-        Call<List<LeaderboardEntry>> leaderboardEntryCall= apiService.getLeaderboard();
-        leaderboardEntryCall.enqueue(new Callback<List<LeaderboardEntry>>() {
+        Call<List<GlobalLeaderboardEntry>> leaderboardEntryCall= apiService.getLeaderboard();
+        leaderboardEntryCall.enqueue(new Callback<List<GlobalLeaderboardEntry>>() {
             @Override
-            public void onResponse(Call<List<LeaderboardEntry>> call, Response<List<LeaderboardEntry>> response) {
+            public void onResponse(Call<List<GlobalLeaderboardEntry>> call, Response<List<GlobalLeaderboardEntry>> response) {
                 try {
                     callback.onSuccess(response.body());
                 } catch (Exception e) {
@@ -76,10 +76,34 @@ public class MangerService {
             }
 
             @Override
-            public void onFailure(Call<List<LeaderboardEntry>> call, Throwable t) {
+            public void onFailure(Call<List<GlobalLeaderboardEntry>> call, Throwable t) {
                 callback.onError(t);
             }
         });
+    }
+    public void Leaderboard_Single(LogoutRequest logoutRequest,final LeaderboardResponseSingle callback){
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(base_url)
+                .addConverterFactory(GsonConverterFactory.create()).build();
+        ApiService apiService=retrofit.create(ApiService.class);
+        Call<List<LeaderboardData>> leaderboardEntryCall= apiService.getSLeaderboard(logoutRequest);
+
+        leaderboardEntryCall.enqueue(new Callback<List<LeaderboardData>>() {
+            @Override
+            public void onResponse(Call<List<LeaderboardData>> call, Response<List<LeaderboardData>> response) {
+                try {
+                    callback.onSuccess(response.body());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<LeaderboardData>> call, Throwable t) {
+                callback.onError(t);
+            }
+        });
+
     }
 
 }
