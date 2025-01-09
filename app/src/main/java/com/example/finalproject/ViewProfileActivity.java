@@ -183,10 +183,11 @@ public class ViewProfileActivity extends AppCompatActivity {
     private void populateUserData() {
 
         SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+            float userRank=preferences.getFloat("rank", 0);
             firstName.setText(preferences.getString("f_name", null));
             lastName.setText(preferences.getString("l_name", null));
             email.setText(preferences.getString("user_email", null));
-            rank.setText("6"); // Ensure rank column exists in the result table
+            rank.setText(String.valueOf(userRank)); // Ensure rank column exists in the result table
             initials.setText(preferences.getString("f_name", null).substring(0,1).toUpperCase()+preferences.getString("l_name", null).substring(0,1).toUpperCase());
 
     }

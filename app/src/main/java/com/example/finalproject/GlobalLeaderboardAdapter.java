@@ -46,13 +46,11 @@ public class GlobalLeaderboardAdapter extends RecyclerView.Adapter<GlobalLeaderb
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            rankTextView = itemView.findViewById(R.id.rankTextView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
             scoreTextView = itemView.findViewById(R.id.scoreTextView);
         }
 
         public void bind(GlobalLeaderboardData data) {
-            rankTextView.setText(String.valueOf(data.getRank()));
             nameTextView.setText(data.getFirstName() + " " + data.getLastName());
             scoreTextView.setText(String.valueOf(data.getFinalScore()));
         }

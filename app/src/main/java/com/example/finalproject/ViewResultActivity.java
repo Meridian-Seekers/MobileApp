@@ -10,6 +10,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.finalproject.interfaces.SinglePoseResponse;
+import com.example.finalproject.models.LogoutRequest;
+import com.example.finalproject.models.SinglePoses;
+import com.example.finalproject.services.MangerService;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,19 +34,29 @@ public class ViewResultActivity extends AppCompatActivity implements OnItemClick
 
         recyclerView = findViewById(R.id.recyclerView_result);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         resultsDataList = new ArrayList<>();
-        // Add ResultData items to the list
-        resultsDataList.add(new ResultData("90%", R.drawable.pose1, "motodachiageuke"));
-        resultsDataList.add(new ResultData("90%", R.drawable.pose2, "motodachijodantsuki"));
-        resultsDataList.add(new ResultData("90%", R.drawable.pose3, "shikodachigedanbarai"));
-        resultsDataList.add(new ResultData("90%", R.drawable.pose4, "motodachiageuke"));
-        resultsDataList.add(new ResultData("90%", R.drawable.pose5, "motodachijodantsuki"));
-        resultsDataList.add(new ResultData("90%", R.drawable.pose6, "shikodachigedanbarai"));
-        // Add more items...
-
         recyclerAdapter = new RecyclerAdapter(this, resultsDataList, this);
-        recyclerView.setAdapter(recyclerAdapter);
+
+        MangerService mangerService=new MangerService();
+        mangerService.get_Single_Poses(new LogoutRequest(),new SinglePoseResponse() {
+            @Override
+            public void onSuccess(List<SinglePoses> singlePosesList) {
+
+
+                for (SinglePoses singlePoses: singlePosesList){
+                    resultsDataList.add(new ResultData(singlePoses.getSingle_pose_result(),singlePoses.getSingle_pose_image_link(),singlePoses.getSingle_pose_name()));
+                }
+
+                recyclerView.setAdapter(recyclerAdapter);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+        });
+
+
 
 
         homebtn = findViewById(R.id.homebtn);
@@ -60,6 +75,15 @@ public class ViewResultActivity extends AppCompatActivity implements OnItemClick
             public void onClick(View v) {
                 // Intent to start Guide_video_Activity
                 Intent intent = new Intent(ViewResultActivity.this, Guide_video_Activity.class);
+                startActivity(intent);
+            }
+        });
+        ImageView insertVideo = findViewById(R.id.insertvideo);
+        insertVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Intent to start PopupUpload
+                Intent intent = new Intent(ViewResultActivity.this, PopupUpload.class);
                 startActivity(intent);
             }
         });

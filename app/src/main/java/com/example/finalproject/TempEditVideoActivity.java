@@ -4,52 +4,62 @@ import static android.content.ContentValues.TAG;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
+import com.example.finalproject.interfaces.ApiService;
+import com.example.finalproject.models.Up_Video;
+import com.example.finalproject.services.MangerService;
 import com.gowtham.library.utils.LogMessage;
 import com.gowtham.library.utils.TrimVideo;
+
+import java.io.File;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class TempEditVideoActivity extends AppCompatActivity {
 
     private Uri videoUri;
-    
+    private String email;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_temp_edit_video);
 
         Intent intent = getIntent();
         videoUri = intent.getData();
         if (videoUri != null) {
-            Toast.makeText(this, "Done", Toast.LENGTH_LONG).show();
-            //ActivityResultLauncher<Intent> startForResult = ;
+            Toast.makeText(this, "Video received, starting trim", Toast.LENGTH_LONG).show();
+
             TrimVideo.activity(String.valueOf(videoUri))
                     .setHideSeekBar(true)
-                    .start(this,registerForActivityResult(
+                    .start(this, registerForActivityResult(
                             new ActivityResultContracts.StartActivityForResult(),
                             result -> {
                                 if (result.getResultCode() == Activity.RESULT_OK &&
                                         result.getData() != null) {
                                     Uri trimmedUri = Uri.parse(TrimVideo.getTrimmedVideoPath(result.getData()));
                                     Log.d(TAG, "Trimmed path:: " + trimmedUri);
-
-                                    // Start ProcessingActivity with the trimmed video URI
-                                    Intent processingIntent = new Intent(TempEditVideoActivity.this, ProcessingActivity.class);
-                                    processingIntent.setData(trimmedUri);
-                                    startActivity(processingIntent);
-                                    finish(); // Close the current activity
+                                    SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                    email= preferences.getString("user_email", null);
+                                    // Upload the trimmed video to the backend
+                                    uploadTrimmedVideo(trimmedUri, "Sample Title", email);
+                                    Intent intsent = new Intent(TempEditVideoActivity.this, ProcessingActivity.class);
+                                    startActivity(intsent);
+                                    finish();
                                 } else {
                                     LogMessage.v("videoTrimResultLauncher data is null");
                                 }
@@ -57,13 +67,45 @@ public class TempEditVideoActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "No video URI received", Toast.LENGTH_LONG).show();
         }
-
-
-
-
-
     }
 
+    private void uploadTrimmedVideo(Uri videoUri, String title, String email) {
+        // Convert Uri to File
+        File videoFile = new File(videoUri.getPath());
+        if (!videoFile.exists()) {
+            Toast.makeText(this, "Video file not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        // Prepare video file
+        RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/*"), videoFile);
+        MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", videoFile.getName(), videoRequestBody);
 
+        // Prepare title and description
+        RequestBody titleRequestBody = RequestBody.create(MediaType.parse("text/plain"), title);
+        RequestBody emailRequestBody = RequestBody.create(MediaType.parse("text/plain"), email);
+
+        // Make the API call
+        ApiService apiService = new MangerService().getRetrofitInstance().create(ApiService.class);
+        Call<ResponseBody> call = apiService.uploadVideo(emailRequestBody,titleRequestBody, videoPart);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Video uploaded successfully");
+                    Toast.makeText(TempEditVideoActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e(TAG, "Upload failed: " + response.errorBody());
+                    Toast.makeText(TempEditVideoActivity.this, "Upload failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e(TAG, "Error: " + t.getMessage());
+                Toast.makeText(TempEditVideoActivity.this, "Error during upload", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 }

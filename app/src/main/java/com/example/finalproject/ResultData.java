@@ -1,29 +1,33 @@
 package com.example.finalproject;
 
-public class ResultData {
-    private String result;
-    private int imageUrl;
-    private String classname;
+import android.net.Uri;
 
-    public ResultData(String result, int imageUrl, String classname) {
+public class ResultData {
+    private float result;
+    private String imageUrl;
+    private String classname;
+    private Uri uri;
+
+    public ResultData(float result, String imageUrl, String classname) {
         this.result = result;
-        this.imageUrl = imageUrl;
+        this.uri  = Uri.parse(imageUrl);
         this.classname = classname;
     }
 
-    public String getResult() {
+    public float getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    public void setResult(float result) {
         this.result = result;
     }
 
-    public int getImageUrl() {
-        return imageUrl;
+    public Uri getImageUrl() {
+
+        return uri;
     }
 
-    public void setImageUrl(int imageUrl) {
+    public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 
