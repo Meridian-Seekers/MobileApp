@@ -21,19 +21,19 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MangerService {
-    private String base_url="http://10.95.145.77:5000/api/";
+    private String base_url="http://172.31.98.218:5000/api/";
     private static Retrofit retrofit;
 
     public MangerService(){
 
     }
 
-    public void get_Single_Poses(LogoutRequest logoutRequest,final SinglePoseResponse callback){
+    public void get_Single_Poses(final SinglePoseResponse callback){
         Retrofit retrofit=new Retrofit.Builder()
                 .baseUrl(base_url)
                 .addConverterFactory(GsonConverterFactory.create()).build();
         ApiService apiService=retrofit.create(ApiService.class);
-        Call<List<SinglePoses>> listCall=apiService.getSinglePoses(logoutRequest);
+        Call<List<SinglePoses>> listCall=apiService.getSinglePoses();
         listCall.enqueue(new Callback<List<SinglePoses>>() {
             @Override
             public void onResponse(Call<List<SinglePoses>> call, Response<List<SinglePoses>> response) {

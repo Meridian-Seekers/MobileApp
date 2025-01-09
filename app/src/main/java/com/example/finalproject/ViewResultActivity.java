@@ -38,7 +38,7 @@ public class ViewResultActivity extends AppCompatActivity implements OnItemClick
         recyclerAdapter = new RecyclerAdapter(this, resultsDataList, this);
 
         MangerService mangerService=new MangerService();
-        mangerService.get_Single_Poses(new LogoutRequest(),new SinglePoseResponse() {
+        mangerService.get_Single_Poses(new SinglePoseResponse() {
             @Override
             public void onSuccess(List<SinglePoses> singlePosesList) {
 
