@@ -68,7 +68,7 @@ public interface ApiService {
     Call<ProcessingStatusResponse> getProcessingStatus();
 
 
-    @POST("get_single_pose_details")
-    Call<List<SinglePoses>> getSinglePoses(@Body LogoutRequest logoutRequest);
+    @GET("get_single_pose_details")
+    Call<List<SinglePoses>> getSinglePoses();
 
 }

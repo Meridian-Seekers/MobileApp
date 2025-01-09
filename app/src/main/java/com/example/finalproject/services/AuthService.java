@@ -22,7 +22,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AuthService {
-    private String base_url="http://10.95.145.77:5000/api/";
+    private String base_url="http://172.31.98.218:5000/api/";
     public AuthService(){
 
     }
