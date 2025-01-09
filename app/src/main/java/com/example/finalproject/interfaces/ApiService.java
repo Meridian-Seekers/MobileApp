@@ -9,7 +9,9 @@ import com.example.finalproject.models.LoginResponse;
 import com.example.finalproject.models.LogoutRequest;
 import com.example.finalproject.models.PasswordResetRequest;
 import com.example.finalproject.models.PasswordResetResponse;
+import com.example.finalproject.models.ProcessingStatusResponse;
 import com.example.finalproject.models.SingleLeaderboardEntry;
+import com.example.finalproject.models.SinglePoses;
 import com.example.finalproject.models.User;
 import com.example.finalproject.models.Video;
 
@@ -61,4 +63,12 @@ public interface ApiService {
 
     @POST("main_model_api/single_leaderboard")
     Call<List<LeaderboardData>> getSLeaderboard(@Body LogoutRequest logoutRequest);
+
+    @GET("status") // Replace "status" with your actual endpoint
+    Call<ProcessingStatusResponse> getProcessingStatus();
+
+
+    @POST("get_single_pose_details")
+    Call<List<SinglePoses>> getSinglePoses(@Body LogoutRequest logoutRequest);
+
 }

@@ -36,8 +36,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Adapte
     public void onBindViewHolder(@NonNull RecyclerAdapter.AdapterViewHolder holder, int position) {
         ResultData resultData = resultsDataList.get(position);
 
-        holder.results.setText(resultData.getResult());
-        holder.cardImage.setImageResource(resultData.getImageUrl());
+        holder.results.setText(Float.toString(resultData.getResult()));
+        holder.cardImage.setImageURI(resultData.getImageUrl());
         holder.className.setText(resultData.getClassname());
 
         holder.view.setOnClickListener(new View.OnClickListener() {

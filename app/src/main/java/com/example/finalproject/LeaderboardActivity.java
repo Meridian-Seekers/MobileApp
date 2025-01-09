@@ -25,7 +25,11 @@ import com.example.finalproject.models.SingleLeaderboardEntry;
 import com.example.finalproject.services.MangerService;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LeaderboardActivity extends AppCompatActivity {
 
@@ -92,6 +96,54 @@ public class LeaderboardActivity extends AppCompatActivity {
                 // Do nothing
             }
         });
+        homeButton = findViewById(R.id.homebtn);
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LeaderboardActivity.this, HomepageActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Find the ImageViews and set OnClickListeners
+        ImageView imageView6 = findViewById(R.id.imageView6);
+        imageView6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Intent to start Guide_video_Activity
+                Intent intent = new Intent(LeaderboardActivity.this, Guide_video_Activity.class);
+                startActivity(intent);
+            }
+        });
+        ImageView insertVideo = findViewById(R.id.insertvideo);
+        insertVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Intent to start PopupUpload
+                Intent intent = new Intent(LeaderboardActivity.this, PopupUpload.class);
+                startActivity(intent);
+            }
+        });
+
+        ImageView imageView7 = findViewById(R.id.imageView7);
+        imageView7.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Intent to start LeaderboardActivity
+                Intent intent = new Intent(LeaderboardActivity.this, LeaderboardActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        ImageView imageView8 = findViewById(R.id.imageView8);
+        imageView8.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Intent to start ViewProfileActivity
+                Intent intent = new Intent(LeaderboardActivity.this, ViewProfileActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void initializeViews() {
@@ -120,6 +172,17 @@ public class LeaderboardActivity extends AppCompatActivity {
                     leaderboardDataList.clear();
                     leaderboardDataList.addAll(leaderboard);
                     adapterSinglePerformance.notifyDataSetChanged();
+                    if (!leaderboard.isEmpty()) {
+                        // Find the maximum score in the leaderboard
+                        LeaderboardData maxItem = Collections.max(leaderboard, Comparator.comparingDouble(LeaderboardData::getScore));
+                        float maxScore = (float) maxItem.getScore(); // Replace `getScore` with the actual method to get the score.
+
+                        // Save the maximum score in SharedPreferences
+                        SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.putFloat("rank", maxScore);
+                        editor.apply(); // Apply changes asynchronously
+                    }
                 });
             }
 
@@ -137,9 +200,30 @@ public class LeaderboardActivity extends AppCompatActivity {
             public void onSuccess(List<GlobalLeaderboardEntry> leaderboard) {
                 new Handler(Looper.getMainLooper()).post(() -> {
                     globalLeaderboardList.clear();
+
+                    // Use a Map to group by user and store the max score for each user
+                    Map<String, GlobalLeaderboardEntry> maxScoresByUser = new HashMap<>();
+
                     for (GlobalLeaderboardEntry entry : leaderboard) {
-                        globalLeaderboardList.add(new GlobalLeaderboardData(entry.getF_name(), entry.getL_name(), entry.getScore()));
+                        String userKey = entry.getF_name() + " " + entry.getL_name();
+                        if (!maxScoresByUser.containsKey(userKey) ||
+                                entry.getScore() > maxScoresByUser.get(userKey).getScore()) {
+                            maxScoresByUser.put(userKey, entry);
+                        }
                     }
+
+                    // Add the max scores to the global leaderboard list
+                    for (GlobalLeaderboardEntry maxEntry : maxScoresByUser.values()) {
+                        globalLeaderboardList.add(new GlobalLeaderboardData(
+                                maxEntry.getF_name(),
+                                maxEntry.getL_name(),
+                                maxEntry.getScore()
+                        ));
+                    }
+
+                    // Sort the list by score in descending order
+                    Collections.sort(globalLeaderboardList, (a, b) -> Double.compare(b.getFinalScore(), a.getFinalScore()));
+
                     adapterGlobalRank.notifyDataSetChanged();
                 });
             }
@@ -150,6 +234,8 @@ public class LeaderboardActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     private String getCurrentUserEmail() {
         SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);

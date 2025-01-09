@@ -57,6 +57,9 @@ public class TempEditVideoActivity extends AppCompatActivity {
                                     email= preferences.getString("user_email", null);
                                     // Upload the trimmed video to the backend
                                     uploadTrimmedVideo(trimmedUri, "Sample Title", email);
+                                    Intent intsent = new Intent(TempEditVideoActivity.this, ProcessingActivity.class);
+                                    startActivity(intsent);
+                                    finish();
                                 } else {
                                     LogMessage.v("videoTrimResultLauncher data is null");
                                 }

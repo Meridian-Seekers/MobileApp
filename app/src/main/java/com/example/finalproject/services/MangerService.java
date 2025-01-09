@@ -4,10 +4,12 @@ import com.example.finalproject.LeaderboardData;
 import com.example.finalproject.interfaces.ApiService;
 import com.example.finalproject.interfaces.LeaderboardResponse;
 import com.example.finalproject.interfaces.LeaderboardResponseSingle;
+import com.example.finalproject.interfaces.SinglePoseResponse;
 import com.example.finalproject.interfaces.VideoResponse;
 import com.example.finalproject.models.GlobalLeaderboardEntry;
 import com.example.finalproject.models.LogoutRequest;
 import com.example.finalproject.models.SingleLeaderboardEntry;
+import com.example.finalproject.models.SinglePoses;
 import com.example.finalproject.models.Video;
 
 import java.util.List;
@@ -19,11 +21,34 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MangerService {
-    private String base_url="http://192.168.1.10:5000/api/";
+    private String base_url="http://10.95.145.77:5000/api/";
     private static Retrofit retrofit;
 
     public MangerService(){
 
+    }
+
+    public void get_Single_Poses(LogoutRequest logoutRequest,final SinglePoseResponse callback){
+        Retrofit retrofit=new Retrofit.Builder()
+                .baseUrl(base_url)
+                .addConverterFactory(GsonConverterFactory.create()).build();
+        ApiService apiService=retrofit.create(ApiService.class);
+        Call<List<SinglePoses>> listCall=apiService.getSinglePoses(logoutRequest);
+        listCall.enqueue(new Callback<List<SinglePoses>>() {
+            @Override
+            public void onResponse(Call<List<SinglePoses>> call, Response<List<SinglePoses>> response) {
+                try {
+                    callback.onSuccess(response.body());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<SinglePoses>> call, Throwable t) {
+                callback.onError(t);
+            }
+        });
     }
     public void getGuideVideos(final VideoResponse callback){
         Retrofit retrofit=new Retrofit.Builder()

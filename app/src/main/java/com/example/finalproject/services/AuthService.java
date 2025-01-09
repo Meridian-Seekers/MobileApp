@@ -3,6 +3,7 @@ package com.example.finalproject.services;
 import com.example.finalproject.interfaces.ApiService;
 import com.example.finalproject.interfaces.DeleteCallBack;
 import com.example.finalproject.interfaces.ResponseCallBack;
+import com.example.finalproject.interfaces.ResponseCallBack2;
 import com.example.finalproject.interfaces.passwordresponceCallBack;
 import com.example.finalproject.models.DeleteAcc;
 import com.example.finalproject.models.EmailRequest;
@@ -12,6 +13,7 @@ import com.example.finalproject.models.PasswordResetRequest;
 import com.example.finalproject.models.PasswordResetResponse;
 import com.example.finalproject.models.User;
 import com.example.finalproject.models.DeleteResponse;
+import com.example.finalproject.models.ProcessingStatusResponse;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -20,7 +22,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AuthService {
-    private String base_url="http://192.168.1.10:5000/api/";
+    private String base_url="http://10.95.145.77:5000/api/";
     public AuthService(){
 
     }
@@ -247,6 +249,34 @@ public class AuthService {
 
             @Override
             public void onFailure(Call<PasswordResetResponse> call, Throwable t) {
+                callback.onError(t);
+            }
+        });
+
+
+    }
+
+    public void getProcessingStatus(final ResponseCallBack2<ProcessingStatusResponse> callback) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(base_url)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ApiService apiService = retrofit.create(ApiService.class);
+        Call<ProcessingStatusResponse> call = apiService.getProcessingStatus();
+
+        call.enqueue(new Callback<ProcessingStatusResponse>() {
+            @Override
+            public void onResponse(Call<ProcessingStatusResponse> call, Response<ProcessingStatusResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError(new Throwable("Failed to fetch processing status"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ProcessingStatusResponse> call, Throwable t) {
                 callback.onError(t);
             }
         });
