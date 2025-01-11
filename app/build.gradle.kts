@@ -49,4 +49,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.github.a914-gowtham:android-video-trimmer:1.7.19")
 
+    implementation ("com.squareup.picasso:picasso:2.71828")
+
 }

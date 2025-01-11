@@ -1,26 +1,26 @@
 package com.example.finalproject;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.bumptech.glide.Glide;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CorrectPoseActivity extends AppCompatActivity {
 
     ImageButton closeButton;
     TextView correctPoseDescriptionTextView;
     TextView poseNameTextView;
-
     ImageView poseImageView;
 
     @Override
@@ -36,34 +36,27 @@ public class CorrectPoseActivity extends AppCompatActivity {
         ResultData resultData = getIntent().getParcelableExtra("resultData");
 
         if (resultData != null) {
-            // Display the values in a Toast
-            String message = "Result: " + resultData.getResult() +
-                    ", Class: " + resultData.getClassname() +
-                    ", Image URL: " + resultData.getImageUrl().toString() +
-                    ", Correct Name: " + resultData.getCorrectName() +
-                    ", Correct Description: " + resultData.getCorrectDesc() +
-                    ", Correct Img: " + resultData.getCorrectImg();
-            //Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-
-            String googleDriveUrl = resultData.getCorrectImg();
-            convertToDirectLink(googleDriveUrl);
-
-            // Set the values to the corresponding TextViews
             poseNameTextView.setText(resultData.getCorrectName());
             correctPoseDescriptionTextView.setText(resultData.getCorrectDesc());
 
-            Glide.with(CorrectPoseActivity.this)
-                    .load("https://drive.google.com/uc?export=download&id=1G44Q3D17pGOQOiUunRobkpfaFj1RYQlc")
-                    .into(poseImageView);
+            ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setMessage("Loading image...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
 
+            Picasso.get()
+                    .load("https://drive.google.com/uc?id=" + extractFileId(String.valueOf(resultData.getCorrectImg())))
+                    .into(poseImageView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            progressDialog.dismiss();
+                        }
 
-        }
-
-        if (resultData != null) {
-
-
-
-
+                        @Override
+                        public void onError(Exception e) {
+                            progressDialog.dismiss();
+                        }
+                    });
         } else {
             poseNameTextView.setText("Pose name not provided");
             correctPoseDescriptionTextView.setText("No description available");
@@ -72,15 +65,15 @@ public class CorrectPoseActivity extends AppCompatActivity {
         closeButton.setOnClickListener(v -> finish());
     }
 
-    private void convertToDirectLink(String driveUrl) {
-        if (driveUrl.contains("drive.google.com")) {
-            String[] parts = driveUrl.split("/");
-            if (parts.length > 5) {
-                driveUrl = "https://drive.google.com/uc?id=" + parts[5];
-                Glide.with(CorrectPoseActivity.this)
-                        .load(driveUrl)
-                        .into(poseImageView);
-            }
+    public static String extractFileId(String url) {
+        String regex = "drive\\.google\\.com/.*?/d/([a-zA-Z0-9_-]+)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(url);
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            return null;
         }
     }
 }

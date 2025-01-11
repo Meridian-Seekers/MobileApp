@@ -35,22 +35,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/posename" />
 
-    <TextView
-        android:id="@+id/poseDesc"
+
+
+    <ScrollView
         android:layout_width="326dp"
         android:layout_height="247dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/input_background"
-        android:fontFamily="@font/droid_serif"
         android:padding="10dp"
-        android:text="Correct Pose Description"
-        android:textSize="18dp"
+        android:layout_marginTop="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.626"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageview"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0">
+
+        <TextView
+            android:id="@+id/poseDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/input_background"
+            android:fontFamily="@font/droid_serif"
+            android:padding="10dp"
+            android:text="Correct Pose Description"
+            android:textSize="18dp" />
+
+    </ScrollView>
 
     <TextView
         android:id="@+id/posename"

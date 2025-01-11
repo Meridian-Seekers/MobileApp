@@ -42,8 +42,6 @@ public class ViewResultActivity extends AppCompatActivity implements OnItemClick
         Intent intent = getIntent();
         int resultId = intent.getIntExtra("resultId", -1);
         int resultCount = intent.getIntExtra("poseCount", -1);
-        Toast.makeText(ViewResultActivity.this,"Poses : " + resultCount + "Result ID : " + resultId,Toast.LENGTH_LONG).show();
-
 
         if (resultId != -1) {
             MangerService mangerService = new MangerService();

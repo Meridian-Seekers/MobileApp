@@ -99,7 +99,6 @@ public class TempEditVideoActivity extends AppCompatActivity {
                         String responseBody = response.body() != null ? response.body().string() : "Response body is null";
                         Log.d(TAG, "Video uploaded successfully: " + responseBody);
 
-                        Toast.makeText(TempEditVideoActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
                     } catch (IOException e) {
                         Log.e(TAG, "Error reading response body: " + e.getMessage());
                     }
