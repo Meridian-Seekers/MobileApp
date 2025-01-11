@@ -20,6 +20,7 @@ import com.gowtham.library.utils.LogMessage;
 import com.gowtham.library.utils.TrimVideo;
 
 import java.io.File;
+import java.io.IOException;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -93,19 +94,36 @@ public class TempEditVideoActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d(TAG, "Video uploaded successfully");
-                    Toast.makeText(TempEditVideoActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
+                    try {
+                        // Log the response body
+                        String responseBody = response.body() != null ? response.body().string() : "Response body is null";
+                        Log.d(TAG, "Video uploaded successfully: " + responseBody);
+
+                        Toast.makeText(TempEditVideoActivity.this, "Upload successful!", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error reading response body: " + e.getMessage());
+                    }
                 } else {
-                    Log.e(TAG, "Upload failed: " + response.errorBody());
-                    Toast.makeText(TempEditVideoActivity.this, "Upload failed!", Toast.LENGTH_SHORT).show();
+                    try {
+                        // Log the error response body
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Error body is null";
+                        Log.e(TAG, "Upload failed with error: " + errorBody);
+
+                        Toast.makeText(TempEditVideoActivity.this, "Upload failed!", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error reading error body: " + e.getMessage());
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e(TAG, "Error: " + t.getMessage());
+                // Log the failure message
+                Log.e(TAG, "Error during API call: " + t.getMessage(), t);
+
                 Toast.makeText(TempEditVideoActivity.this, "Error during upload", Toast.LENGTH_SHORT).show();
             }
         });
+        
     }
 }

@@ -9,8 +9,11 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.bumptech.glide.Glide;
 
 public class CorrectPoseActivity extends AppCompatActivity {
 
@@ -30,35 +33,54 @@ public class CorrectPoseActivity extends AppCompatActivity {
         poseNameTextView = findViewById(R.id.posename);
         poseImageView = findViewById(R.id.imageview);
 
-        // Retrieve the pose_name passed from ViewResultActivity
-        Intent intent = getIntent();
-        String poseName = intent.getStringExtra("pose_name");
+        ResultData resultData = getIntent().getParcelableExtra("resultData");
 
-        if (poseName != null) {
-            // Fetch the details from the database
-            DBHelper dbHelper = new DBHelper(this);
-            Cursor cursor = dbHelper.getPoseDetails(poseName);
+        if (resultData != null) {
+            // Display the values in a Toast
+            String message = "Result: " + resultData.getResult() +
+                    ", Class: " + resultData.getClassname() +
+                    ", Image URL: " + resultData.getImageUrl().toString() +
+                    ", Correct Name: " + resultData.getCorrectName() +
+                    ", Correct Description: " + resultData.getCorrectDesc() +
+                    ", Correct Img: " + resultData.getCorrectImg();
+            //Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
-            if (cursor != null && cursor.moveToFirst()) {
-                @SuppressLint("Range")
-                String poseDescription = cursor.getString(cursor.getColumnIndex("pose_description"));
-                @SuppressLint("Range")
-                int imageData = cursor.getInt(cursor.getColumnIndex("image_url"));
+            String googleDriveUrl = resultData.getCorrectImg();
+            convertToDirectLink(googleDriveUrl);
 
-                poseNameTextView.setText(poseName);
-                correctPoseDescriptionTextView.setText(poseDescription);
-                // Set the Bitmap to the ImageView
-                poseImageView.setImageResource(imageData);
-                cursor.close();
-            } else {
-                poseNameTextView.setText("Pose not found");
-                correctPoseDescriptionTextView.setText("No description available");
-            }
+            // Set the values to the corresponding TextViews
+            poseNameTextView.setText(resultData.getCorrectName());
+            correctPoseDescriptionTextView.setText(resultData.getCorrectDesc());
+
+            Glide.with(CorrectPoseActivity.this)
+                    .load("https://drive.google.com/uc?export=download&id=1G44Q3D17pGOQOiUunRobkpfaFj1RYQlc")
+                    .into(poseImageView);
+
+
+        }
+
+        if (resultData != null) {
+
+
+
+
         } else {
             poseNameTextView.setText("Pose name not provided");
             correctPoseDescriptionTextView.setText("No description available");
         }
 
         closeButton.setOnClickListener(v -> finish());
+    }
+
+    private void convertToDirectLink(String driveUrl) {
+        if (driveUrl.contains("drive.google.com")) {
+            String[] parts = driveUrl.split("/");
+            if (parts.length > 5) {
+                driveUrl = "https://drive.google.com/uc?id=" + parts[5];
+                Glide.with(CorrectPoseActivity.this)
+                        .load(driveUrl)
+                        .into(poseImageView);
+            }
+        }
     }
 }

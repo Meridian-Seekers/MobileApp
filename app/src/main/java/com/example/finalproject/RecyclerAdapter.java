@@ -1,15 +1,20 @@
 package com.example.finalproject;
 
 import android.content.Context;
+import android.content.Intent;
+import android.health.connect.datatypes.units.Length;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
@@ -36,17 +41,22 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Adapte
     public void onBindViewHolder(@NonNull RecyclerAdapter.AdapterViewHolder holder, int position) {
         ResultData resultData = resultsDataList.get(position);
 
-        holder.results.setText(Float.toString(resultData.getResult()));
-        holder.cardImage.setImageURI(resultData.getImageUrl());
+        holder.results.setText(String.format("%.2f", resultData.getResult()));
+
+        // Use Glide to load the image into the ImageView
+        Glide.with(context)
+                .load(resultData.getImageUrl())
+                .into(holder.cardImage);
+
         holder.className.setText(resultData.getClassname());
 
-        holder.view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onItemClickListener.onItemClick(resultData);
-            }
+        holder.view.setOnClickListener(view -> {
+            Intent intent = new Intent(context, CorrectPoseActivity.class);
+            intent.putExtra("resultData", resultData); // Pass the Parcelable object
+            context.startActivity(intent);
         });
     }
+
 
     @Override
     public int getItemCount() {

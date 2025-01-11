@@ -1,5 +1,7 @@
 package com.example.finalproject.services;
 
+import android.util.Log;
+
 import com.example.finalproject.LeaderboardData;
 import com.example.finalproject.interfaces.ApiService;
 import com.example.finalproject.interfaces.LeaderboardResponse;
@@ -13,7 +15,9 @@ import com.example.finalproject.models.SinglePoses;
 import com.example.finalproject.models.Video;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -21,35 +25,49 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MangerService {
-    private String base_url="http://172.31.98.218:5000/api/";
+    private String base_url=AppConfig.BASE_URL;
     private static Retrofit retrofit;
 
     public MangerService(){
 
     }
 
-    public void get_Single_Poses(final SinglePoseResponse callback){
-        Retrofit retrofit=new Retrofit.Builder()
-                .baseUrl(base_url)
-                .addConverterFactory(GsonConverterFactory.create()).build();
-        ApiService apiService=retrofit.create(ApiService.class);
-        Call<List<SinglePoses>> listCall=apiService.getSinglePoses();
+    public void get_Single_Poses(int resultId, final SinglePoseResponse callback) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(base_url) // Make sure this is your correct base URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        // Pass the result_id as a query parameter to the API
+        Call<List<SinglePoses>> listCall = apiService.getSinglePoses(resultId);
+
         listCall.enqueue(new Callback<List<SinglePoses>>() {
             @Override
             public void onResponse(Call<List<SinglePoses>> call, Response<List<SinglePoses>> response) {
-                try {
-                    callback.onSuccess(response.body());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                if (response.isSuccessful()) {
+                    if (response.body() != null && !response.body().isEmpty()) {
+                        callback.onSuccess(response.body());
+                    } else {
+                        Log.e("API Response", "Response is empty or null");
+                        callback.onError(new Exception("Empty response body"));
+                    }
+                } else {
+                    Log.e("API Response", "Error: " + response.code() + " " + response.message());
+                    callback.onError(new Exception("Error: " + response.code()));
                 }
             }
 
             @Override
             public void onFailure(Call<List<SinglePoses>> call, Throwable t) {
+                Log.e("API Request", "Request failed: " + t.getMessage());
                 callback.onError(t);
             }
         });
     }
+
+
+
     public void getGuideVideos(final VideoResponse callback){
         Retrofit retrofit=new Retrofit.Builder()
                 .baseUrl(base_url)
@@ -77,8 +95,15 @@ public class MangerService {
     }
     public Retrofit getRetrofitInstance() {
         if (retrofit == null) {
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(120, TimeUnit.SECONDS)  // Increase connection timeout
+                    .writeTimeout(120, TimeUnit.SECONDS)    // Increase write timeout
+                    .readTimeout(120, TimeUnit.SECONDS)     // Increase read timeout
+                    .addInterceptor(new LoggingInterceptor())  // Add the logging interceptor
+                    .build();
             retrofit = new Retrofit.Builder()
                     .baseUrl(base_url)
+                    .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }

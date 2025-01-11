@@ -9,7 +9,10 @@ import com.example.finalproject.models.LoginResponse;
 import com.example.finalproject.models.LogoutRequest;
 import com.example.finalproject.models.PasswordResetRequest;
 import com.example.finalproject.models.PasswordResetResponse;
+import com.example.finalproject.models.PoseCountResponse;
 import com.example.finalproject.models.ProcessingStatusResponse;
+import com.example.finalproject.models.RequestBodyForPoseCount;
+import com.example.finalproject.models.ResultResponse;
 import com.example.finalproject.models.SingleLeaderboardEntry;
 import com.example.finalproject.models.SinglePoses;
 import com.example.finalproject.models.User;
@@ -27,6 +30,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
+import retrofit2.http.Query;
 
 public interface ApiService {
     @POST("login")
@@ -67,8 +71,13 @@ public interface ApiService {
     @GET("status") // Replace "status" with your actual endpoint
     Call<ProcessingStatusResponse> getProcessingStatus();
 
+    @GET("main_model_api/get_single_pose_details")
+    Call<List<SinglePoses>> getSinglePoses(@Query("result_id") int resultId);
 
-    @GET("get_single_pose_details")
-    Call<List<SinglePoses>> getSinglePoses();
+    @POST("count_results")
+    Call<ResultResponse> getResult(@Body com.example.finalproject.models.RequestBody body);
+
+    @POST("count_single_pose")
+    Call<PoseCountResponse> getPoseCount(@Body RequestBodyForPoseCount body);
 
 }

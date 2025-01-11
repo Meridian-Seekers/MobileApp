@@ -8,3 +8,4 @@ public interface SinglePoseResponse {
     void onSuccess(List<SinglePoses> singlePosesList);
     void onError(Throwable t);
 }
+

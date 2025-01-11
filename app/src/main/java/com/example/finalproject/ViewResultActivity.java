@@ -2,16 +2,18 @@ package com.example.finalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.finalproject.interfaces.SinglePoseResponse;
-import com.example.finalproject.models.LogoutRequest;
 import com.example.finalproject.models.SinglePoses;
 import com.example.finalproject.services.MangerService;
 
@@ -37,84 +39,54 @@ public class ViewResultActivity extends AppCompatActivity implements OnItemClick
         resultsDataList = new ArrayList<>();
         recyclerAdapter = new RecyclerAdapter(this, resultsDataList, this);
 
-        MangerService mangerService=new MangerService();
-        mangerService.get_Single_Poses(new SinglePoseResponse() {
-            @Override
-            public void onSuccess(List<SinglePoses> singlePosesList) {
+        Intent intent = getIntent();
+        int resultId = intent.getIntExtra("resultId", -1);
+        int resultCount = intent.getIntExtra("poseCount", -1);
+        Toast.makeText(ViewResultActivity.this,"Poses : " + resultCount + "Result ID : " + resultId,Toast.LENGTH_LONG).show();
 
 
-                for (SinglePoses singlePoses: singlePosesList){
-                    resultsDataList.add(new ResultData(singlePoses.getSingle_pose_result(),singlePoses.getSingle_pose_image_link(),singlePoses.getSingle_pose_name()));
+        if (resultId != -1) {
+            MangerService mangerService = new MangerService();
+            mangerService.get_Single_Poses(resultId, new SinglePoseResponse() {
+                @Override
+                public void onSuccess(List<SinglePoses> singlePosesList) {
+                    for (SinglePoses singlePoses : singlePosesList) {
+                        resultsDataList.add(new ResultData(singlePoses.getSingle_pose_result(),
+                                singlePoses.getSingle_pose_image_link(),
+                                singlePoses.getSingle_pose_name(),
+                                singlePoses.getCorrect_pose_name(),
+                                singlePoses.getCorrect_pose_details(),
+                                singlePoses.getCorrect_pose_image_link()));
+                    }
+                    recyclerView.setAdapter(recyclerAdapter);
                 }
 
-                recyclerView.setAdapter(recyclerAdapter);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-
-            }
-        });
-
-
-
+                @Override
+                public void onError(Throwable t) {
+                    Log.e("Error", "Error while fetching poses: " + t.getMessage());
+                }
+            });
+        }
 
         homebtn = findViewById(R.id.homebtn);
-        homebtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ViewResultActivity.this, HomepageActivity.class);
-                startActivity(intent);
-            }
+        homebtn.setOnClickListener(v -> {
+            Intent homeIntent = new Intent(ViewResultActivity.this, HomepageActivity.class);
+            startActivity(homeIntent);
         });
 
-        // Find the ImageViews and set OnClickListeners
-        ImageView imageView6 = findViewById(R.id.imageView6);
-        imageView6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Intent to start Guide_video_Activity
-                Intent intent = new Intent(ViewResultActivity.this, Guide_video_Activity.class);
-                startActivity(intent);
-            }
-        });
-        ImageView insertVideo = findViewById(R.id.insertvideo);
-        insertVideo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Intent to start PopupUpload
-                Intent intent = new Intent(ViewResultActivity.this, PopupUpload.class);
-                startActivity(intent);
-            }
-        });
-
-        ImageView imageView7 = findViewById(R.id.imageView7);
-        imageView7.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Intent to start LeaderboardActivity
-                Intent intent = new Intent(ViewResultActivity.this, LeaderboardActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        ImageView imageView8 = findViewById(R.id.imageView8);
-        imageView8.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Intent to start ViewProfileActivity
-                Intent intent = new Intent(ViewResultActivity.this, ViewProfileActivity.class);
-                startActivity(intent);
-            }
-        });
+        // Intent for other buttons
+        findViewById(R.id.imageView6).setOnClickListener(v -> startActivity(new Intent(ViewResultActivity.this, Guide_video_Activity.class)));
+        findViewById(R.id.insertvideo).setOnClickListener(v -> startActivity(new Intent(ViewResultActivity.this, PopupUpload.class)));
+        findViewById(R.id.imageView7).setOnClickListener(v -> startActivity(new Intent(ViewResultActivity.this, LeaderboardActivity.class)));
+        findViewById(R.id.imageView8).setOnClickListener(v -> startActivity(new Intent(ViewResultActivity.this, ViewProfileActivity.class)));
     }
-
-
 
     @Override
     public void onItemClick(ResultData resultData) {
         Intent intent = new Intent(ViewResultActivity.this, CorrectPoseActivity.class);
         intent.putExtra("pose_name", resultData.getClassname());
+        intent.putExtra("image_url", resultData.getImageUrl());
+        intent.putExtra("pose_result", resultData.getResult());
         startActivity(intent);
     }
 }

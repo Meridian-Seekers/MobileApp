@@ -1,5 +1,7 @@
 package com.example.finalproject.services;
 
+import android.util.Log;
+
 import com.example.finalproject.interfaces.ApiService;
 import com.example.finalproject.interfaces.DeleteCallBack;
 import com.example.finalproject.interfaces.ResponseCallBack;
@@ -22,7 +24,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AuthService {
-    private String base_url="http://172.31.98.218:5000/api/";
+    private String base_url=AppConfig.BASE_URL;
     public AuthService(){
 
     }
@@ -270,6 +272,8 @@ public class AuthService {
             public void onResponse(Call<ProcessingStatusResponse> call, Response<ProcessingStatusResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     callback.onSuccess(response.body());
+                    Log.d("ProcessingActivity", "API Response: " + response.toString());
+
                 } else {
                     callback.onError(new Throwable("Failed to fetch processing status"));
                 }
